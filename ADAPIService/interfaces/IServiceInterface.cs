@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADAPICommon.model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ADAPIService.interfaces;
 
-public interface IUserInterface
+public interface IServiceInterface
 {
-    public void GetUser(object OUIdentifier, object userId, object groupName);
+    public void CreateADObject(ADObject userModel);
 }

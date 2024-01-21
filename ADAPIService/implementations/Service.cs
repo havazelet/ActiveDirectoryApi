@@ -1,4 +1,5 @@
-﻿using ADAPIReposetory;
+﻿using ADAPICommon.model;
+using ADAPIReposetory;
 using ADAPIReposetory.implementions;
 using ADAPIService.interfaces;
 using System;
@@ -9,16 +10,16 @@ using System.Threading.Tasks;
 
 namespace ADAPIService.implementations;
 
-public class User : IUserInterface
+public class Service : IServiceInterface
 {
-    public void GetUser(object OUIdentifier, object userId, object groupName)
+    public void CreateADObject(ADObject userModel)
     {
         using (HttpClient httpClient = new HttpClient())
         {
             try
             {
                 Repository ADrequest = new Repository();
-                ADrequest.AddUserToGroupInOU(OUIdentifier, userId, groupName);
+                ADrequest.AddADObject(userModel);
             }
             catch (Exception ex)
             {

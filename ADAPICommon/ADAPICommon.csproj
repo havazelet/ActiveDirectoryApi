@@ -10,7 +10,6 @@
   <ItemGroup>
     <Folder Include="implementions\" />
     <Folder Include="interfaces\" />
-    <Folder Include="model\" />
   </ItemGroup>
 
 </Project>

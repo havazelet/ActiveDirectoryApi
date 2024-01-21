@@ -1,61 +1,54 @@
-﻿using ADAPIReposetory.interfaces;
-using System.Data;
+﻿using ADAPICommon.model;
+using ADAPIReposetory.interfaces;
+using System;
 using System.DirectoryServices;
-using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace ADAPIReposetory.implementions
+namespace ADAPIReposetory.implementions;
+
+public class Repository : IRepository
 {
-    public class Repository : IRepository
+    public void AddADObject(ADObject adObject)
     {
-      
-        public void AddUserToGroupInOU(object OUIdentifier, object userId, object groupName)
+        try
         {
-            try
-            {   
-                using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{OUIdentifier}"))
+            using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier.Value}"))
+            {
+                using (DirectorySearcher ouSearcher = new DirectorySearcher(ouEntry))
                 {
-                    using (DirectorySearcher ouSearcher = new DirectorySearcher(ouEntry))
-                    {
-                        ouSearcher.Filter = $"(&(objectClass=user)(sAMAccountName={userId}))";
-                        SearchResult userResult = ouSearcher.FindOne();
+                    string filter = $"(&(objectClass=user)({adObject.OUIdentifier.Attribute}={adObject.Attributes.CN}))";
+                    ouSearcher.Filter = filter;
 
-                        if (userResult != null)
+                    SearchResult objectResult = ouSearcher.FindOne();
+
+                    if (objectResult != null)
+                    {
+                        using (DirectoryEntry objectEntry = objectResult.GetDirectoryEntry())
                         {
-                            using (DirectoryEntry userEntry = userResult.GetDirectoryEntry())
+                            using (DirectoryEntry groupEntry = ouEntry.Children.Find($"CN={adObject.Identifier.Value}", "group"))
                             {
-                                using (DirectoryEntry groupEntry = ouEntry.Children.Find($"CN={groupName}", "group"))
+                                if (groupEntry != null)
                                 {
-                                    if (groupEntry != null)
-                                    {
-                                        groupEntry.Invoke("Add", new object[] { userEntry.Path });
-                                        groupEntry.CommitChanges();
-                                    }
+                                    groupEntry.Invoke("Add", new object[] { objectEntry.Path });
+                                    groupEntry.CommitChanges();
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException($"Group with CN={adObject.Identifier.Value} not found.");
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        throw new InvalidOperationException($"Object with {adObject.OUIdentifier.Attribute}={adObject.Attributes.CN} not found.");
+                    }
                 }
             }
-            catch (DirectoryServicesCOMException ex)
-            {
-                throw new ("error", ex);
-            }
         }
-
-
-        public void AddAdObject(object OUIdentifier, object userId, object groupName)
+        catch (DirectoryServicesCOMException ex)
         {
-            String strPath = "LDAP://DC=onecity,DC=corp,DC=fabrikam,DC=com";
+            throw new InvalidOperationException("An error occurred while working with Active Directory.", ex);
         }
-
     }
-
-
 }
-
-
-
 

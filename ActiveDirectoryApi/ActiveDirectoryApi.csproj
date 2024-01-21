@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ADAPICommon\ADAPICommon.csproj" />
     <ProjectReference Include="..\ADAPIService\ADAPIService.csproj" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADAPICommon.model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -9,6 +10,6 @@ namespace ADAPIReposetory.interfaces
 {
     internal interface IRepository
     {
-        public void AddUserToGroupInOU(object OUIdentifier, object userId, object groupName);
+        public void AddADObject(ADObject userModel);
     }
 }
