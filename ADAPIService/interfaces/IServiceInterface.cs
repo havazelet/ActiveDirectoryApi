@@ -9,5 +9,5 @@ namespace ADAPIService.interfaces;
 
 public interface IServiceInterface
 {
-    public void CreateADObject(ADObject userModel);
+    public void CreateADObject(ADObject userModel, string adObjectType);
 }

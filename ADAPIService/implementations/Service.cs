@@ -12,14 +12,14 @@ namespace ADAPIService.implementations;
 
 public class Service : IServiceInterface
 {
-    public void CreateADObject(ADObject userModel)
+    public void CreateADObject(ADObject userModel, string adObjectType)
     {
         using (HttpClient httpClient = new HttpClient())
         {
             try
             {
                 Repository ADrequest = new Repository();
-                ADrequest.AddADObject(userModel);
+                ADrequest.AddADObject(userModel, adObjectType);
             }
             catch (Exception ex)
             {

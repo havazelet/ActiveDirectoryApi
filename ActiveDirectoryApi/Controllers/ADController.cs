@@ -18,8 +18,8 @@ namespace ActiveDirectoryApi.Controllers
         [HttpPost("user/create")]
         public IActionResult PostOU(ADObject userModel)
         {
-            Service user = new Service();
-            user.CreateADObject(userModel);
+            Service adObjectService = new Service();
+            adObjectService.CreateADObject(userModel, "user");
             return Ok(); 
         }
     }
@@ -29,18 +29,18 @@ namespace ActiveDirectoryApi.Controllers
         [HttpPost("group/create")]
         public IActionResult PostUser(ADObject GroupModel)
         {
-
-
+            Service adObjectService = new Service();
+            adObjectService.CreateADObject(GroupModel, "group");
             return Ok(); 
-    }
+        }
 
     public class OUController : BaseController
     {
         [HttpPost]
         public IActionResult PostGroup(ADObject OUModel)
         {
-           
-
+            Service adObjectService = new Service();
+            adObjectService.CreateADObject(OUModel, "OU");
             return Ok();
         }
     }
