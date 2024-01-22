@@ -4,35 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ADAPICommon.model
+namespace ADAPICommon.model;
+
+public class ADObject
 {
-    // OUModel.cs
-
-    public class OUIdentifier
-    {
-        public string Attribute { get; set; }
-        public string Value { get; set; }
-    }
-
-    public class Attributes
-    {
-        public string CN { get; set; }
-        public string GivenName { get; set; }
-        public string SN { get; set; }
-        public string UserPrincipalName { get; set; }
-    }
-
-    public class Identifier
-    {
-        public string Attribute { get; set; }
-        public string Value { get; set; }
-    }
-
-    public class ADObject
-    {
-        public OUIdentifier OUIdentifier { get; set; }
-        public Attributes Attributes { get; set; }
-        public Identifier Identifier { get; set; }
-    }
-
+    public OUIdentifierModel OUIdentifier { get; set; }
+    public AttributesModel Attributes { get; set; }
+    public IdentifierModel Identifier { get; set; }
 }

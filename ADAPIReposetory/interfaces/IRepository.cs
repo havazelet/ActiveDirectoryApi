@@ -6,10 +6,9 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ADAPIReposetory.interfaces
+namespace ADAPIReposetory.interfaces;
+
+public interface IRepository
 {
-    internal interface IRepository
-    {
-        public void AddADObject(ADObject userModel, string adObjectType);
-    }
+    public void AddADObject(ADObject userModel, string adObjectType);
 }

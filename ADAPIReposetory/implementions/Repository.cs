@@ -11,16 +11,14 @@ public class Repository : IRepository
     {
         try
         {
-            using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://users/create/{adObject.OUIdentifier?.Value}"))
+            using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://users/create/{adObject.OUIdentifier?.Value}");
+            using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"CN={adObject.Attributes?.CN}", adObjectType))
             {
-                using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"CN={adObject.Attributes.CN}", adObjectType))
-                {
-                    newObjectEntry.Properties["OUIdentifier"].Value = adObject.OUIdentifier;
-                    newObjectEntry.Properties["Attributes"].Value = adObject.Attributes;
-                    newObjectEntry.Properties["Identifier"].Value = adObject.Identifier;
+                newObjectEntry.Properties["OUIdentifier"].Value = adObject.OUIdentifier;
+                newObjectEntry.Properties["Attributes"].Value = adObject.Attributes;
+                newObjectEntry.Properties["Identifier"].Value = adObject.Identifier;
 
-                    newObjectEntry.CommitChanges();                
-                }
+                newObjectEntry.CommitChanges();
             }
         }
         catch (DirectoryServicesCOMException ex)

@@ -3,53 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 using ADAPIService;
 using ADAPIService.implementations;
 using ADAPICommon.model;
+using ADAPIService.interfaces;
 
-namespace ActiveDirectoryApi.Controllers
+namespace ActiveDirectoryApi.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public abstract class BaseController : Controller
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class BaseController : Controller
+    protected IServiceInterface _service;
+    public BaseController(IServiceInterface service)
     {
-      
+        
     }
-
-    public class UserController : BaseController
-    {
-        [HttpPost("user/create")]
-        public IActionResult PostOU(ADObject userModel)
-        {
-            Service adObjectService = new Service();
-            adObjectService.CreateADObject(userModel, "user");
-            return Ok(); 
-        }
-    }
-
-    public class GroupController : BaseController
-    {
-        [HttpPost("group/create")]
-        public IActionResult PostUser(ADObject GroupModel)
-        {
-            Service adObjectService = new Service();
-            adObjectService.CreateADObject(GroupModel, "group");
-            return Ok(); 
-        }
-
-    public class OUController : BaseController
-    {
-        [HttpPost]
-        public IActionResult PostGroup(ADObject OUModel)
-        {
-            Service adObjectService = new Service();
-            adObjectService.CreateADObject(OUModel, "OU");
-            return Ok();
-        }
-    }
-
 }
 
-
-
- }
 
 
 

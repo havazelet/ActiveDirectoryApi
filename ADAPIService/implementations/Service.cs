@@ -1,6 +1,7 @@
 ﻿using ADAPICommon.model;
 using ADAPIReposetory;
 using ADAPIReposetory.implementions;
+using ADAPIReposetory.interfaces;
 using ADAPIService.interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,19 +13,24 @@ namespace ADAPIService.implementations;
 
 public class Service : IServiceInterface
 {
-    public void CreateADObject(ADObject userModel, string adObjectType)
+    protected IRepository _repository;
+
+    public Service(IServiceInterface repository)
     {
-        using (HttpClient httpClient = new HttpClient())
+
+    }
+
+    public bool IsValidADObject(ADObject adObject)
+    {
+        if (adObject == null || adObject.Attributes == null || adObject.Identifier == null || adObject.OUIdentifier == null)
         {
-            try
-            {
-                Repository ADrequest = new Repository();
-                ADrequest.AddADObject(userModel, adObjectType);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
+            return false;
         }
+        return true;
+    }
+
+    public void CreateADObject(ADObject adObject, string adObjectType)
+    {
+        _repository.AddADObject(adObject, adObjectType);      
     }
 }
