@@ -17,9 +17,15 @@ public class ADService : IServiceInterface
     private ILogger<ADService> _logger;
     protected IRepository _repository;
 
-    public ADService(IServiceInterface repository, ILogger<ADService> logger)
+    public ADService(IRepository repository, ILogger<ADService> logger)
     {
+        _repository = repository;
         _logger = logger;
+    }
+
+    public void CreateADObject(ADObject adObject, string adObjectType)
+    {
+        _repository.AddADObject(adObject, adObjectType);
     }
 
     public bool IsValidADObject(ADObject adObject)
@@ -31,8 +37,5 @@ public class ADService : IServiceInterface
         return true;
     }
 
-    public void CreateADObject(ADObject adObject, string adObjectType)
-    {
-        _repository.AddADObject(adObject, adObjectType);      
-    }
+   
 }

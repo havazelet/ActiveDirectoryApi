@@ -16,7 +16,7 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddService(this IServiceCollection services)
     {
-        services.AddSingleton<IRepository, Repository>();
+        services.AddSingleton<IServiceInterface, ADService>();
         return services;
     } 
 }

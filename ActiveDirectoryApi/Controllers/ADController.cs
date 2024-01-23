@@ -15,7 +15,7 @@ public abstract class ADController : Controller
     protected IServiceInterface _service;
     public ADController(IServiceInterface service, ILogger<ADController> logger)
     {
-
+        _service = service;
         _logger = logger;
 
     }
