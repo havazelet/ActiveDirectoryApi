@@ -7,7 +7,7 @@ namespace ActiveDirectoryApi.Controllers;
 
 public class OUController : ADController
 {
-    public OUController(IServiceInterface service) : base(service)
+    public OUController(IServiceInterface service, ILogger<ADController> logger) : base(service, logger)
     {
 
     } 

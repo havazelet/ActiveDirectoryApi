@@ -9,6 +9,6 @@ namespace ADAPICommon.model;
 public class ADObject
 {
     public OUIdentifier OUIdentifier { get; set; }
-    public Attributes Attributes { get; set; }
+    public Dictionary<string, string> Attributes { get; set; }
     public Identifier Identifier { get; set; }
 }

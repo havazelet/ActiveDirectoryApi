@@ -8,16 +8,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace ADAPIService.implementations;
 
 public class ADService : IServiceInterface
 {
+    private ILogger<ADService> _logger;
     protected IRepository _repository;
 
-    public ADService(IServiceInterface repository)
+    public ADService(IServiceInterface repository, ILogger<ADService> logger)
     {
-
+        _logger = logger;
     }
 
     public bool IsValidADObject(ADObject adObject)

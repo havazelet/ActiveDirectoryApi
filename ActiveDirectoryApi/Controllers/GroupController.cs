@@ -7,7 +7,7 @@ namespace ActiveDirectoryApi.Controllers;
 
 public class GroupController : ADController
 {
-    public GroupController(IServiceInterface service) : base(service)
+    public GroupController(IServiceInterface service, ILogger<ADController> logger) : base(service, logger)
     {
 
     }
