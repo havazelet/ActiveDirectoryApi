@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ActiveDirectoryApi.Controllers;
 
-public class GroupController : BaseController
+public class GroupController : ADController
 {
     public GroupController(IServiceInterface service) : base(service)
     {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ActiveDirectoryApi.Controllers;
 
-public class OUController : BaseController
+public class OUController : ADController
 {
     public OUController(IServiceInterface service) : base(service)
     {

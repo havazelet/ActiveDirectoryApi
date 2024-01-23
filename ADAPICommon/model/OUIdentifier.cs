@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ADAPICommon.model;
 
-public class OUIdentifierModel
+public class OUIdentifier
 {
     public string Attribute { get; set; }
     public string Value { get; set; }

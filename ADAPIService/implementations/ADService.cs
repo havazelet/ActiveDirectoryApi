@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace ADAPIService.implementations;
 
-public class Service : IServiceInterface
+public class ADService : IServiceInterface
 {
     protected IRepository _repository;
 
-    public Service(IServiceInterface repository)
+    public ADService(IServiceInterface repository)
     {
 
     }

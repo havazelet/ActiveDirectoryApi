@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ActiveDirectoryApi.Controllers;
 
-public class UserController : BaseController
+public class UserController : ADController
 {
 
     public UserController(IServiceInterface service) : base(service)

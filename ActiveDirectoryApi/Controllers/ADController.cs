@@ -9,10 +9,10 @@ namespace ActiveDirectoryApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public abstract class BaseController : Controller
+public abstract class ADController : Controller
 {
     protected IServiceInterface _service;
-    public BaseController(IServiceInterface service)
+    public ADController(IServiceInterface service)
     {
         
     }

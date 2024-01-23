@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ADAPICommon.model;
 
-public class AttributesModel
+public class Attributes
 {
-    public string CN { get; set; }
+    public string Cn { get; set; }
     public string GivenName { get; set; }
-    public string SN { get; set; }
+    public string Sn { get; set; }
     public string UserPrincipalName { get; set; }
 }
