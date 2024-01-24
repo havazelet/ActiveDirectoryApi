@@ -20,7 +20,7 @@ public class Repository : IRepository
     {
         try
         {
-            using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://users/create/{adObject.OUIdentifier?.Value}");
+            using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},DC=osher,DC=lab");
             using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"CN={adObject.Attributes["Cn"]}", adObjectType))
             {
                 foreach (var attribute in adObject.Attributes)
