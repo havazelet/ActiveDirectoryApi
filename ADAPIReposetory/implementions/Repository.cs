@@ -20,7 +20,7 @@ public class Repository : IRepository
     {
         try
         {
-            string commonName = (adObjectType == "OU") ? "Ou" : "Cn";
+            string commonName = (adObjectType == "OrganizationalUnit") ? "Ou" : "Cn";
 
             using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},DC=osher,DC=lab");
             using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))

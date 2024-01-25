@@ -14,8 +14,8 @@ public class OUController : ADController
 
     [HttpPost("create")]
     public IActionResult CreateGroup(ADObject adObject)
-    {;
-        _service.CreateADObject(adObject, "OU");
+    {
+        _service.CreateADObject(adObject, "OrganizationalUnit");
         return Ok();
     }
 }
