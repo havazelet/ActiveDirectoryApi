@@ -14,13 +14,13 @@ namespace ADAPIService.implementations;
 
 public class ADService : IServiceInterface
 {
-    private ILogger<ADService> _logger;
+    private readonly ILogger<ADService> _logger;
     protected IRepository _repository;
 
-    public ADService(IRepository repository, ILogger<ADService> logger)
+    public ADService(ILogger<ADService> logger, IRepository repository)
     {
-        _repository = repository;
         _logger = logger;
+        _repository = repository;
     }
 
     public void CreateADObject(ADObject adObject, string adObjectType)

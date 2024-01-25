@@ -8,7 +8,7 @@ namespace ADAPIReposetory.implementions;
 
 public class Repository : IRepository
 {
-    private ILogger<Repository> _logger;
+    private readonly ILogger<Repository> _logger;
 
     public Repository(ILogger<Repository> logger)
     {
@@ -20,8 +20,10 @@ public class Repository : IRepository
     {
         try
         {
+            string commonName = (adObjectType == "OU") ? "Ou" : "Cn";
+
             using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},DC=osher,DC=lab");
-            using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"CN={adObject.Attributes["Cn"]}", adObjectType))
+            using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
             {
                 foreach (var attribute in adObject.Attributes)
                 {

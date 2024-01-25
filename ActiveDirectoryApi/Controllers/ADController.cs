@@ -11,9 +11,9 @@ namespace ActiveDirectoryApi.Controllers;
 [ApiController]
 public abstract class ADController : Controller
 {
-    private ILogger<ADController> _logger;
+    private readonly ILogger<ADController> _logger;
     protected IServiceInterface _service;
-    public ADController(IServiceInterface service, ILogger<ADController> logger)
+    public ADController(ILogger<ADController> logger, IServiceInterface service)
     {
         _service = service;
         _logger = logger;

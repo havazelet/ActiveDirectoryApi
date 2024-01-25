@@ -8,7 +8,7 @@ namespace ActiveDirectoryApi.Controllers;
 public class UserController : ADController
 {
 
-    public UserController(IServiceInterface service, ILogger<ADController> logger) : base(service, logger)
+    public UserController(ILogger<ADController> logger, IServiceInterface service) : base(logger, service)
     {
 
     }
