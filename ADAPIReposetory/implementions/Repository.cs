@@ -37,5 +37,33 @@ public class Repository : IRepository
             newObjectEntry.CommitChanges();
         }
     }
+
+    public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
+    {
+
+        string objectType = _configuration["ActiveDirectory:ObjectType"];
+        string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
+
+        string commonName = (adObjectType == objectType) ? _configuration["ActiveDirectory:OU"] : _configuration["ActiveDirectory:CN"];
+
+        using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{newAdObject.Identifier?.Value},{ldapPath}"))
+        using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={newAdObject.WriteAttribute[commonName]}", adObjectType))
+        {
+            foreach (var attribute in newAdObject.WriteAttribute)
+            {        
+                if (newObjectEntry.Properties.Contains(attribute.Key))
+                {
+                    newObjectEntry.Properties[attribute.Key].Value = attribute.Value;
+                }
+                //else
+                //{
+                //    newObjectEntry.Properties.Add(attribute.Key, attribute.Value);
+                //}
+            }
+            newObjectEntry.CommitChanges();
+        }
+    }
+
+
 }
 

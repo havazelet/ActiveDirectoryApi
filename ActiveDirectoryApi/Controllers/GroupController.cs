@@ -18,4 +18,11 @@ public class GroupController : ADController
         _service.CreateADObject(adObject, "group");
         return Ok();
     }
+
+    [HttpPost("modify")]
+    public IActionResult ModifyGroup(ModifyModel newAdObject)
+    {
+        _service.ModifyADObject(newAdObject, "group");
+        return Ok();
+    }
 }

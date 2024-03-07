@@ -10,5 +10,6 @@ namespace ADAPIReposetory.interfaces;
 
 public interface IRepository
 {
-    public void AddADObject(ADObject userModel, string adObjectType);
+    public void AddADObject(ADObject adObject, string adObjectType);
+    public void ModifyADObject(ModifyModel newAdObject, string adObjectType);
 }

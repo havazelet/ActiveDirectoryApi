@@ -60,4 +60,24 @@ public class ADService : IServiceInterface
     }
 
 
+    public IActionResult ModifyADObject(ModifyModel newAdObject, string adObjectType)
+    {
+        try
+        {
+            //if (!IsValidADObject(newAdObject))
+            //{
+            //    var errorResponse = new { IsSuccess = false, ErrorMessage = "Invalid ADObject. Please provide valid attributes." };
+            //    return new BadRequestObjectResult(errorResponse);
+            //}
+            _repository.ModifyADObject(newAdObject, adObjectType);
+            return new OkObjectResult("ADObject added successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"An error occurred while working with Active Directory: {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+    }
+
+
 }

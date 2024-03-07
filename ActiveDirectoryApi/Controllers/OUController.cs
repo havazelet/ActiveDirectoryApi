@@ -18,4 +18,11 @@ public class OUController : ADController
         _service.CreateADObject(adObject, "OrganizationalUnit");
         return Ok();
     }
+
+    [HttpPost("modify")]
+    public IActionResult ModifyGroup(ModifyModel newAdObject)
+    {
+        _service.ModifyADObject(newAdObject, "OrganizationalUnit");
+        return Ok();
+    }
 }
