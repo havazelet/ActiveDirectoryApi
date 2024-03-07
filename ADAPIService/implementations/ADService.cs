@@ -47,10 +47,10 @@ public class ADService : IServiceInterface
 
     public bool IsValidADObject(ADObject adObject)
     {
-        return adObject != null &&
-         adObject.Attributes != null &&
-         adObject.Identifier != null &&
-         adObject.OUIdentifier != null;
+        return adObject is not null &&
+         adObject.Attributes is not null &&
+         adObject.Identifier is not null &&
+         adObject.OUIdentifier is not null;
     }
     public class OperationResult
     {

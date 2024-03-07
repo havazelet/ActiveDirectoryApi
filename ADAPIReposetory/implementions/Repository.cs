@@ -1,5 +1,6 @@
 ﻿using ADAPICommon.model;
 using ADAPIReposetory.interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.DirectoryServices;
@@ -9,18 +10,26 @@ namespace ADAPIReposetory.implementions;
 public class Repository : IRepository
 {
     private readonly ILogger<Repository> _logger;
+    private readonly IConfiguration _configuration;
 
-    public Repository(ILogger<Repository> logger)
+    public Repository(ILogger<Repository> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _configuration = configuration;
     }
 
 
     public void AddADObject(ADObject adObject, string adObjectType)
     {
-        string commonName = (adObjectType == "OrganizationalUnit") ? "Ou" : "Cn";
 
-        using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},DC=osher,DC=lab");
+        string objectType = _configuration["ActiveDirectory:ObjectType"];
+        string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
+        string OU = _configuration["ActiveDirectory:OU"];
+        string CN = _configuration["ActiveDirectory:CN"];
+
+        string commonName = (adObjectType == objectType) ? OU : CN;
+
+        using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},{ldapPath}"))
         using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
         {
             foreach (var attribute in adObject.Attributes)
