@@ -13,28 +13,21 @@ public class Repository : IRepository
     public Repository(ILogger<Repository> logger)
     {
         _logger = logger;
-    } 
+    }
 
 
     public void AddADObject(ADObject adObject, string adObjectType)
     {
-        try
-        {
-            string commonName = (adObjectType == "OrganizationalUnit") ? "Ou" : "Cn";
+        string commonName = (adObjectType == "OrganizationalUnit") ? "Ou" : "Cn";
 
-            using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},DC=osher,DC=lab");
-            using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
-            {
-                foreach (var attribute in adObject.Attributes)
-                {
-                    newObjectEntry.Properties[attribute.Key].Value = attribute.Value;
-                }
-                newObjectEntry.CommitChanges();
-            }
-        }
-        catch (DirectoryServicesCOMException ex)
+        using DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},DC=osher,DC=lab");
+        using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
         {
-            throw new InvalidOperationException("An error occurred while working with Active Directory.", ex);
+            foreach (var attribute in adObject.Attributes)
+            {
+                newObjectEntry.Properties[attribute.Key].Value = attribute.Value;
+            }
+            newObjectEntry.CommitChanges();
         }
     }
 }

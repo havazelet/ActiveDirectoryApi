@@ -1,4 +1,5 @@
 ﻿using ADAPICommon.model;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +10,5 @@ namespace ADAPIService.interfaces;
 
 public interface IServiceInterface
 {
-    public void CreateADObject(ADObject userModel, string adObjectType);
+    public IActionResult CreateADObject(ADObject userModel, string adObjectType);
 }
