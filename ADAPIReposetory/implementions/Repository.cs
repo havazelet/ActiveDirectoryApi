@@ -24,10 +24,8 @@ public class Repository : IRepository
 
         string objectType = _configuration["ActiveDirectory:ObjectType"];
         string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
-        string OU = _configuration["ActiveDirectory:OU"];
-        string CN = _configuration["ActiveDirectory:CN"];
 
-        string commonName = (adObjectType == objectType) ? OU : CN;
+        string commonName = (adObjectType == objectType) ? _configuration["ActiveDirectory:OU"] : _configuration["ActiveDirectory:CN"];
 
         using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},{ldapPath}"))
         using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
