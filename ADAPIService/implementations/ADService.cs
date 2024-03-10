@@ -64,11 +64,6 @@ public class ADService : IServiceInterface
     {
         try
         {
-            //if (!IsValidADObject(newAdObject))
-            //{
-            //    var errorResponse = new { IsSuccess = false, ErrorMessage = "Invalid ADObject. Please provide valid attributes." };
-            //    return new BadRequestObjectResult(errorResponse);
-            //}
             _repository.ModifyADObject(newAdObject, adObjectType);
             return new OkObjectResult("ADObject added successfully");
         }
