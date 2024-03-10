@@ -26,7 +26,7 @@ public class Repository : IRepository
         string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
 
         string commonName = (adObjectType == objectType) ? _configuration["ActiveDirectory:OU"] : _configuration["ActiveDirectory:CN"];
-        try { 
+        
         using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},{ldapPath}"))
         using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
         {
@@ -36,41 +36,40 @@ public class Repository : IRepository
             }
             newObjectEntry.CommitChanges();
         }
-        } catch (Exception ex) { 
-            Console.WriteLine($"An error occurred: {ex.Message}"); 
-        }
     }
+
 
     public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
     {
-        try
+        using (DirectorySearcher searcher = new DirectorySearcher())
         {
-            string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
-            string entryPath = $"LDAP://{newAdObject.Identifier?.Value},{ldapPath}";
+            searcher.Filter = $"({newAdObject.Identifier?.Attribute}={newAdObject.Identifier?.Value})";
+            SearchResult result = searcher.FindOne();
 
-            using (DirectoryEntry ouEntry = new DirectoryEntry(entryPath))
+            if (result is not null)
             {
-     
-                if (ouEntry is not null)
+                string distinguishedName = result.Path;
+
+                using (DirectoryEntry objectEntry = new DirectoryEntry(distinguishedName))
                 {
                     foreach (var attribute in newAdObject.WriteAttribute)
                     {
-                        if (ouEntry.Properties.Contains(attribute.Key))
+                        if (objectEntry.Properties.Contains(attribute.Key))
                         {
-                            ouEntry.Properties[attribute.Key].Value = attribute.Value;
+                            objectEntry.Properties[attribute.Key].Value = attribute.Value;
+                        }
+                        else
+                        {
+                            objectEntry.Properties[attribute.Key].Add(attribute.Value);
                         }
                     }
-                    ouEntry.CommitChanges();
+                    objectEntry.CommitChanges();
                 }
-              
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred: {ex.Message}");
-        }
-    }
 
+        }
+        
+    }
 
 }
 

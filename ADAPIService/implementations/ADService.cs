@@ -36,12 +36,12 @@ public class ADService : IServiceInterface
                 return new BadRequestObjectResult(errorResponse);
             }
             _repository.AddADObject(adObject, adObjectType);
-            return new OkObjectResult("ADObject added successfully");
+            return new OkObjectResult($"{adObject} added successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while working with Active Directory: {ex.Message}");
-                return new StatusCodeResult(500);
+            _logger.LogError($"An error occurred while adding {adObject}, error message: {ex.Message}");
+            return new StatusCodeResult(500);
         }
     }
 
@@ -65,11 +65,11 @@ public class ADService : IServiceInterface
         try
         {
             _repository.ModifyADObject(newAdObject, adObjectType);
-            return new OkObjectResult("ADObject added successfully");
+            return new OkObjectResult($"{newAdObject} modify successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while working with Active Directory: {ex.Message}");
+            _logger.LogError(ex, $"An error occurred while modify {newAdObject}, error message:", ex.Message);
             return new StatusCodeResult(500);
         }
     }
