@@ -19,7 +19,7 @@ public class OUController : ADController
         return Ok();
     }
 
-    [HttpPost("modify")]
+    [HttpPut("modify")]
     public IActionResult ModifyGroup(ModifyModel newAdObject)
     {
         _service.ModifyADObject(newAdObject, "OrganizationalUnit");

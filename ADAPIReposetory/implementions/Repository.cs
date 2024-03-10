@@ -26,7 +26,7 @@ public class Repository : IRepository
         string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
 
         string commonName = (adObjectType == objectType) ? _configuration["ActiveDirectory:OU"] : _configuration["ActiveDirectory:CN"];
-
+        try { 
         using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},{ldapPath}"))
         using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
         {
@@ -36,31 +36,38 @@ public class Repository : IRepository
             }
             newObjectEntry.CommitChanges();
         }
+        } catch (Exception ex) { 
+            Console.WriteLine($"An error occurred: {ex.Message}"); 
+        }
     }
 
     public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
     {
-
-        string objectType = _configuration["ActiveDirectory:ObjectType"];
-        string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
-
-        string commonName = (adObjectType == objectType) ? _configuration["ActiveDirectory:OU"] : _configuration["ActiveDirectory:CN"];
-
-        using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{newAdObject.Identifier?.Value},{ldapPath}"))
-        using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={newAdObject.WriteAttribute[commonName]}", adObjectType))
+        try
         {
-            foreach (var attribute in newAdObject.WriteAttribute)
-            {        
-                if (newObjectEntry.Properties.Contains(attribute.Key))
+            string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
+            string entryPath = $"LDAP://{newAdObject.Identifier?.Value},{ldapPath}";
+
+            using (DirectoryEntry ouEntry = new DirectoryEntry(entryPath))
+            {
+     
+                if (ouEntry is not null)
                 {
-                    newObjectEntry.Properties[attribute.Key].Value = attribute.Value;
+                    foreach (var attribute in newAdObject.WriteAttribute)
+                    {
+                        if (ouEntry.Properties.Contains(attribute.Key))
+                        {
+                            ouEntry.Properties[attribute.Key].Value = attribute.Value;
+                        }
+                    }
+                    ouEntry.CommitChanges();
                 }
-                //else
-                //{
-                //    newObjectEntry.Properties.Add(attribute.Key, attribute.Value);
-                //}
+              
             }
-            newObjectEntry.CommitChanges();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 
