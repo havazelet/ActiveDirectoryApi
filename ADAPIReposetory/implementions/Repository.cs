@@ -45,6 +45,16 @@ public class Repository : IRepository
         }
     }
 
+    public void HandleMoveAction(ModifyModel newAdObject)
+    {
+        using DirectorySearcher searcherDestination = new DirectorySearcher();
+        searcherDestination.Filter = $"({newAdObject.Actions.Move?.DestinationOu?.Attribute}={newAdObject.Actions.Move?.DestinationOu?.Value})";
+        SearchResult resultDestination = searcherDestination.FindOne();
+        DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
+        objectEntry.MoveTo(objectEntryDestination);
+    }
+
+
     public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
     {
         using DirectorySearcher searcher = new DirectorySearcher();
@@ -69,11 +79,7 @@ public class Repository : IRepository
 
             if (newAdObject.Actions.Move is not null)
             {
-                using DirectorySearcher searcherDestination = new DirectorySearcher();
-                searcherDestination.Filter = $"({newAdObject.Actions.Move?.DestinationOu?.Attribute}={newAdObject.Actions.Move?.DestinationOu?.Value})";
-                SearchResult resultDestination = searcherDestination.FindOne();
-                DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
-                objectEntry.MoveTo(objectEntryDestination);
+                HandleMoveAction(newAdObject);  
             }
             objectEntry.CommitChanges();
         }
