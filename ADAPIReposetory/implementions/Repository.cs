@@ -21,23 +21,29 @@ public class Repository : IRepository
 
     public void AddADObject(ADObject adObject, string adObjectType)
     {
-
         string objectType = _configuration["ActiveDirectory:ObjectType"];
-        string ldapPath = _configuration["ActiveDirectory:LDAPPath"];
-
         string commonName = (adObjectType == objectType) ? _configuration["ActiveDirectory:OU"] : _configuration["ActiveDirectory:CN"];
-        
-        using (DirectoryEntry ouEntry = new DirectoryEntry($"LDAP://{adObject.OUIdentifier?.Value},{ldapPath}"))
-        using (DirectoryEntry newObjectEntry = ouEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
+
+        using (DirectorySearcher searcher = new DirectorySearcher())
         {
-            foreach (var attribute in adObject.Attributes)
+            searcher.Filter = $"({adObject.OUIdentifier?.Attribute}={adObject.OUIdentifier?.Value})";
+            SearchResult result = searcher.FindOne();
+
+            if (result is not null)
             {
-                newObjectEntry.Properties[attribute.Key].Value = attribute.Value;
+                DirectoryEntry objectEntry = result.GetDirectoryEntry();
+                using (DirectoryEntry newObject = objectEntry.Children.Add($"{commonName}={adObject.Attributes[commonName]}", adObjectType))
+                {
+                    foreach (var attribute in adObject.Attributes)
+                    {
+                        if (attribute.Value != null)
+                            newObject.Properties[attribute.Key].Value = attribute.Value;
+                    }
+                    newObject.CommitChanges();
+                }
             }
-            newObjectEntry.CommitChanges();
         }
     }
-
 
     public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
     {
@@ -48,27 +54,22 @@ public class Repository : IRepository
 
             if (result is not null)
             {
-                string distinguishedName = result.Path;
+                DirectoryEntry objectEntry = result.GetDirectoryEntry();
 
-                using (DirectoryEntry objectEntry = new DirectoryEntry(distinguishedName))
+                foreach (var attribute in newAdObject.WriteAttribute)
                 {
-                    foreach (var attribute in newAdObject.WriteAttribute)
+                    if (objectEntry.Properties.Contains(attribute.Key))
                     {
-                        if (objectEntry.Properties.Contains(attribute.Key))
-                        {
-                            objectEntry.Properties[attribute.Key].Value = attribute.Value;
-                        }
-                        else
-                        {
-                            objectEntry.Properties[attribute.Key].Add(attribute.Value);
-                        }
+                        objectEntry.Properties[attribute.Key].Value = attribute.Value;
                     }
-                    objectEntry.CommitChanges();
+                    else
+                    {
+                        objectEntry.Properties[attribute.Key].Add(attribute.Value);
+                    }
                 }
+                objectEntry.CommitChanges();
             }
-
         }
-        
     }
 
 }
