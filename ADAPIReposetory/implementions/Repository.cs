@@ -36,7 +36,7 @@ public class Repository : IRepository
                 {
                     foreach (var attribute in adObject.Attributes)
                     {
-                        if (attribute.Value != null)
+                        if (attribute.Value is not null)
                             newObject.Properties[attribute.Key].Value = attribute.Value;
                     }
                     newObject.CommitChanges();
