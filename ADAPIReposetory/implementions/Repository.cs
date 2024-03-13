@@ -45,7 +45,7 @@ public class Repository : IRepository
         }
     }
 
-    public void HandleMoveAction(ModifyModel newAdObject)
+    public void HandleMoveAction(ModifyModel newAdObject, DirectoryEntry objectEntry)
     {
         using DirectorySearcher searcherDestination = new DirectorySearcher();
         searcherDestination.Filter = $"({newAdObject.Actions.Move?.DestinationOu?.Attribute}={newAdObject.Actions.Move?.DestinationOu?.Value})";
@@ -79,7 +79,7 @@ public class Repository : IRepository
 
             if (newAdObject.Actions.Move is not null)
             {
-                HandleMoveAction(newAdObject);  
+                HandleMoveAction(newAdObject, objectEntry);
             }
             objectEntry.CommitChanges();
         }
