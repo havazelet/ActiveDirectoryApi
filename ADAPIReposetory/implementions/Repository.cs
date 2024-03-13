@@ -47,28 +47,35 @@ public class Repository : IRepository
 
     public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
     {
-        using (DirectorySearcher searcher = new DirectorySearcher())
+        using DirectorySearcher searcher = new DirectorySearcher();
+        searcher.Filter = $"({newAdObject.Identifier?.Attribute}={newAdObject.Identifier?.Value})";
+        SearchResult result = searcher.FindOne();
+
+        if (result is not null)
         {
-            searcher.Filter = $"({newAdObject.Identifier?.Attribute}={newAdObject.Identifier?.Value})";
-            SearchResult result = searcher.FindOne();
+            DirectoryEntry objectEntry = result.GetDirectoryEntry();
 
-            if (result is not null)
+            foreach (var attribute in newAdObject.WriteAttribute)
             {
-                DirectoryEntry objectEntry = result.GetDirectoryEntry();
-
-                foreach (var attribute in newAdObject.WriteAttribute)
+                if (objectEntry.Properties.Contains(attribute.Key))
                 {
-                    if (objectEntry.Properties.Contains(attribute.Key))
-                    {
-                        objectEntry.Properties[attribute.Key].Value = attribute.Value;
-                    }
-                    else
-                    {
-                        objectEntry.Properties[attribute.Key].Add(attribute.Value);
-                    }
+                    objectEntry.Properties[attribute.Key].Value = attribute.Value;
                 }
-                objectEntry.CommitChanges();
+                else
+                {
+                    objectEntry.Properties[attribute.Key].Add(attribute.Value);
+                }
             }
+
+            if (newAdObject.Actions.Move is not null)
+            {
+                using DirectorySearcher searcherDestination = new DirectorySearcher();
+                searcherDestination.Filter = $"({newAdObject.Actions.Move?.DestinationOu?.Attribute}={newAdObject.Actions.Move?.DestinationOu?.Value})";
+                SearchResult resultDestination = searcherDestination.FindOne();
+                DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
+                objectEntry.MoveTo(objectEntryDestination);
+            }
+            objectEntry.CommitChanges();
         }
     }
 
