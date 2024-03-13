@@ -19,4 +19,11 @@ public class UserController : ADController
         _service.CreateADObject(adObject, "user");
         return Ok();
     }
+
+    [HttpPut("modify")]
+    public IActionResult ModifyGroup(ModifyModel newAdObject)
+    {
+        _service.ModifyADObject(newAdObject, "user");
+        return Ok();
+    }
 }

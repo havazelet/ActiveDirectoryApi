@@ -11,4 +11,5 @@ namespace ADAPIService.interfaces;
 public interface IServiceInterface
 {
     public IActionResult CreateADObject(ADObject userModel, string adObjectType);
+    public IActionResult ModifyADObject(ModifyModel newAdObject, string adObjectType);
 }
