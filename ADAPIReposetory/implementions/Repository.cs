@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.DirectoryServices;
+using System.Reflection;
+using static System.Collections.Specialized.BitVector32;
 
 namespace ADAPIReposetory.implementions;
 
@@ -45,15 +47,77 @@ public class Repository : IRepository
         }
     }
 
-    public void HandleMoveAction(ModifyModel newAdObject, DirectoryEntry objectEntry)
+    //public void HandleMoveAction(Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
+    //{
+    //    using DirectorySearcher searcherDestination = new DirectorySearcher();
+
+    //    if (actionValue.ContainsKey("destinationOu"))
+    //    {
+    //        Dictionary<string, object> destOu = (Dictionary<string, object>)actionValue["destinationOu"];
+
+    //        if (destOu.ContainsKey("attribute") && destOu.ContainsKey("value"))
+    //        {
+    //            searcherDestination.Filter = $"({destOu["attribute"]}={destOu["value"]})";
+    //        }
+    //    }
+    //    SearchResult resultDestination = searcherDestination.FindOne();
+    //    DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
+    //    objectEntry.MoveTo(objectEntryDestination);
+    // }
+
+    public void HandleMoveAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
     {
         using DirectorySearcher searcherDestination = new DirectorySearcher();
-        searcherDestination.Filter = $"({newAdObject.Actions.Move?.DestinationOu?.Attribute}={newAdObject.Actions.Move?.DestinationOu?.Value})";
+
+        if (actionValue.ContainsKey("destinationOu"))
+        {
+            Dictionary<string, object> destOu = (Dictionary<string, object>)actionValue["destinationOu"];
+
+            if (destOu.ContainsKey("attribute") && destOu.ContainsKey("value"))
+            {
+                searcherDestination.Filter = $"({destOu["attribute"]}={destOu["value"]})";
+            }
+        }
         SearchResult resultDestination = searcherDestination.FindOne();
         DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
-        objectEntry.MoveTo(objectEntryDestination);
+
+        // Get the MoveTo method using reflection
+        var moveToMethod = typeof(DirectoryEntry).GetMethod(actionKey, new[] { typeof(DirectoryEntry) });
+
+        // Invoke the MoveTo method dynamically
+        moveToMethod.Invoke(objectEntry, new object[] { objectEntryDestination });
     }
 
+
+    //public void HandleAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
+    //{
+    //   // var moveToMethod = typeof(DirectoryEntry).GetMethod(actionKey, new[] { typeof(DirectoryEntry) });
+    //    MethodInfo renameMethod = typeof(DirectoryEntry).GetMethod("Rename");
+    //    object[] parameters = new object[] { actionValue["Key"] + "=" + actionValue["Value"] };
+    //    renameMethod.Invoke(objectEntry, parameters);
+    //    // moveToMethod.Invoke(objectEntry, new object[] { actionValue });
+    //}
+
+
+    public void HandleAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
+    {
+        MethodInfo method = typeof(DirectoryEntry).GetMethod(actionKey);
+        if (method != null)
+        {
+            object[] parameters = new object[actionValue.Count];
+            int index = 0;
+            foreach (var kvp in actionValue)
+            {
+                parameters[index++] = kvp.Key + "=" + kvp.Value;
+            }
+            method.Invoke(objectEntry, parameters);
+        }
+        else
+        {
+            Console.WriteLine($"Method {actionKey} not found.");
+            // Handle the case where the method is not found
+        }
+    }
 
     public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
     {
@@ -76,10 +140,13 @@ public class Repository : IRepository
                     objectEntry.Properties[attribute.Key].Add(attribute.Value);
                 }
             }
-
-            if (newAdObject.Actions.Move is not null)
+            foreach (var action in newAdObject.Actions)
             {
-                HandleMoveAction(newAdObject, objectEntry);
+                if (action.Value is not null)
+                {
+                    //HandleMoveAction(action.Key, action.Value, objectEntry);
+                    HandleAction(action.Key, action.Value, objectEntry);
+                }
             }
             objectEntry.CommitChanges();
         }
