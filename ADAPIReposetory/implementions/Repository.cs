@@ -48,124 +48,75 @@ public class Repository : IRepository
         }
     }
 
-    //public void HandleMoveAction(Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
+    //static MethodInfo GetMethod(string actionKey)
     //{
-    //    using DirectorySearcher searcherDestination = new DirectorySearcher();
-
-    //    if (actionValue.ContainsKey("destinationOu"))
+    //    // Implement logic to map action key to method
+    //    switch (actionKey)
     //    {
-    //        Dictionary<string, object> destOu = (Dictionary<string, object>)actionValue["destinationOu"];
-
-    //        if (destOu.ContainsKey("attribute") && destOu.ContainsKey("value"))
-    //        {
-    //            searcherDestination.Filter = $"({destOu["attribute"]}={destOu["value"]})";
-    //        }
+    //        case "SomeAction":
+    //            return typeof(Repository).GetMethod("SomeActionMethod", BindingFlags.Static | BindingFlags.NonPublic);
+    //        // Add more cases for other actions
+    //        default:
+    //            return null;
     //    }
-    //    SearchResult resultDestination = searcherDestination.FindOne();
-    //    DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
-    //    objectEntry.MoveTo(objectEntryDestination);
     //}
 
-    public void HandleMoveAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
+    public void HandleAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
     {
-        using DirectorySearcher searcherDestination = new DirectorySearcher();
-
-        if (actionValue.ContainsKey("destinationOu"))
+        MethodInfo method = typeof(Repository).GetMethod(actionKey);
+        if (method != null)
         {
-            Dictionary<string, object> destOu = (Dictionary<string, object>)actionValue["destinationOu"];
-
-            if (destOu.ContainsKey("attribute") && destOu.ContainsKey("value"))
+            ParameterInfo[] parameters = method.GetParameters();
+            object[] args = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
             {
-                searcherDestination.Filter = $"({destOu["attribute"]}={destOu["value"]})";
+                ParameterInfo parameter = parameters[i];
+                if (parameter.ParameterType == typeof(DirectoryEntry))
+                {
+                    args[i] = objectEntry;
+                }
+                //else if (actionValue.TryGetValue(parameter.Name, out object argValue))
+                else if (true)
+                {
+                    try
+                    {
+                        //if (parameter.ParameterType == typeof(string))
+                        //{
+                        //    string stringValue = argValue.ToString();
+                        //    args[i] = stringValue;
+                        //}
+                        if (true)
+                        {
+                            string typeString = actionValue.First().Value.ToString();
+                            Type parameterType = Type.GetType(typeString);
+                            // args[i] = JsonSerializer.Deserialize<parameter.ParameterType>(argValue.ToString());
+                            object deserializedObject = JsonSerializer.Deserialize(actionValue.First().Value.ToString(), parameterType);
+                            // Assign the deserialized object to the args array
+                            args[i] = deserializedObject;
+                        }
+                    }
+                    catch (InvalidCastException ex)
+                    {
+                        Console.WriteLine($"Failed to convert parameter '{parameter.Name}' to type '{parameter.ParameterType}'. {ex.Message}");
+                    }
+                }
             }
-        }
-        SearchResult resultDestination = searcherDestination.FindOne();
-        DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
-
-        // Get the MoveTo method using reflection
-        var moveToMethod = typeof(DirectoryEntry).GetMethod(actionKey, new[] { typeof(DirectoryEntry) });
-
-        // Invoke the MoveTo method dynamically
-        moveToMethod.Invoke(objectEntry, new object[] { objectEntryDestination });
-    }
-
-
-    //public void HandleAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
-    //{
-    //   // var moveToMethod = typeof(DirectoryEntry).GetMethod(actionKey, new[] { typeof(DirectoryEntry) });
-    //    MethodInfo renameMethod = typeof(DirectoryEntry).GetMethod("Rename");
-    //    object[] parameters = new object[] { actionValue["Key"] + "=" + actionValue["Value"] };
-    //    renameMethod.Invoke(objectEntry, parameters);
-    //    // moveToMethod.Invoke(objectEntry, new object[] { actionValue });
-    //}
-
-
-    //public void HandleAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
-    //{
-    //    MethodInfo method = typeof(DirectoryEntry).GetMethod(actionKey);
-    //    if (method != null)
-    //    {
-    //        object[] parameters = new object[actionValue.Count];
-    //        int index = 0;
-    //        foreach (var kvp in actionValue)
-    //        {
-    //            parameters[index++] = kvp.Key + "=" + kvp.Value;
-    //        }
-    //        method.Invoke(objectEntry, parameters);
-    //    }
-    //    else
-    //    {
-    //        Console.WriteLine($"Method {actionKey} not found.");
-    //        // Handle the case where the method is not found
-    //    }
-    //}
-
-
-    //public void HandleAction(string actionKey, Dictionary<string, string> actionValue, DirectoryEntry objectEntry)
-    //{
-    //   // Rename(objectEntry, actionValue.FirstOrDefault().Value);
-    //    try
-    //    {
-    //        if (actionValue.FirstOrDefault().Value is not null)
-    //        {
-    //            // DirectoryEntry uEntry = new DirectoryEntry(objectEntry);
-    //            objectEntry.Invoke(actionKey, new object[] { actionValue.FirstOrDefault().Value });
-    //        }
-    //        else
-    //        {
-    //            Console.WriteLine($"Error performing action '{actionKey}': Value not found for 'CN' key in actionValue dictionary.");
-    //        }       
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        Console.WriteLine($"Error performing action '{actionKey}': {ex.Message}");
-    //    }
-    //}
-
-
-    public void HandleAction(string actionKey, Dictionary<string, string> actionValue, DirectoryEntry objectEntry)
-    {
-        try
-        {
-            if (actionValue.FirstOrDefault().Value is not null)
-            { 
-                var method = GetType().GetMethod(actionKey);
-                method.Invoke(null, new object[] { objectEntry, actionValue.FirstOrDefault().Value });
-            }
-            else
-            {
-                Console.WriteLine($"Error performing action '{actionKey}': Value not found for 'CN' key in actionValue dictionary.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error performing action '{actionKey}': {ex.Message}");
+            method.Invoke(null, args);
         }
     }
 
     public static void Rename(DirectoryEntry objectEntry, string newName)
     {
-        objectEntry.Rename(newName);
+        try
+        {
+            objectEntry.Rename("CN=" + newName);
+            Console.WriteLine("Entry renamed successfully.");
+        }
+        catch (DirectoryServicesCOMException ex)
+        {
+            Console.WriteLine($"Error renaming entry: {ex.Message}");
+            // Handle the exception as per your application's requirements
+        }
     }
 
     public static void ResetPassword(DirectoryEntry objectEntry, string newName)
@@ -173,23 +124,27 @@ public class Repository : IRepository
         objectEntry.Invoke("setPassword", new object[] { newName });
     }
 
-    public static void MoveTo(DirectoryEntry objectEntry, Identifier newName)
+    public static void MoveTo(DirectoryEntry objectEntry, Identifier destinationOu)
     {
-        using DirectorySearcher searcherDestination = new DirectorySearcher();
-      //  Dictionary<string, string> dictionary = JsonSerializer.Deserialize<Dictionary<string, string>>(newName);
-
-        //if (dictionary.ContainsKey("destinationOu"))
-        //{
-        //    Dictionary<string, string> destOu = dictionary["destinationOu"];
-
-        //    if (destOu.ContainsKey("attribute") && destOu.ContainsKey("value"))
-        //    {
-        //        searcherDestination.Filter = $"({destOu["attribute"]}={destOu["value"]})";
-        //    }
-        //}
-        //SearchResult resultDestination = searcherDestination.FindOne();
-        //DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
-        //objectEntry.MoveTo(objectEntryDestination);
+        using (DirectorySearcher searcherDestination = new DirectorySearcher())
+        {
+            if (destinationOu is not null)
+            {
+                //Identifier destOu = destinationOu["destinationOu"];
+                Identifier destOu = destinationOu;
+                searcherDestination.Filter = $"({destOu.Attribute}={destOu.Value})";
+            }
+            SearchResult resultDestination = searcherDestination.FindOne();
+            if (resultDestination != null)
+            {
+                DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
+                objectEntry.MoveTo(objectEntryDestination);
+            }
+            else
+            {
+                Console.WriteLine("Destination OU not found.");
+            }
+        }
     }
 
     public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
