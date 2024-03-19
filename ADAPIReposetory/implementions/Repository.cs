@@ -48,19 +48,6 @@ public class Repository : IRepository
         }
     }
 
-    //static MethodInfo GetMethod(string actionKey)
-    //{
-    //    // Implement logic to map action key to method
-    //    switch (actionKey)
-    //    {
-    //        case "SomeAction":
-    //            return typeof(Repository).GetMethod("SomeActionMethod", BindingFlags.Static | BindingFlags.NonPublic);
-    //        // Add more cases for other actions
-    //        default:
-    //            return null;
-    //    }
-    //}
-
     public void HandleAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
     {
         MethodInfo method = typeof(Repository).GetMethod(actionKey);
@@ -68,40 +55,38 @@ public class Repository : IRepository
         {
             ParameterInfo[] parameters = method.GetParameters();
             object[] args = new object[parameters.Length];
+
             for (int i = 0; i < parameters.Length; i++)
             {
                 ParameterInfo parameter = parameters[i];
-                if (parameter.ParameterType == typeof(DirectoryEntry))
+                Type parameterType = parameter.ParameterType;
+
+                if (parameterType == typeof(DirectoryEntry))
                 {
                     args[i] = objectEntry;
                 }
-                //else if (actionValue.TryGetValue(parameter.Name, out object argValue))
-                else if (true)
-                {
+                else {
                     try
                     {
-                        //if (parameter.ParameterType == typeof(string))
-                        //{
-                        //    string stringValue = argValue.ToString();
-                        //    args[i] = stringValue;
-                        //}
-                        if (true)
-                        {
-                            string typeString = actionValue.First().Value.ToString();
-                            Type parameterType = Type.GetType(typeString);
-                            // args[i] = JsonSerializer.Deserialize<parameter.ParameterType>(argValue.ToString());
-                            object deserializedObject = JsonSerializer.Deserialize(actionValue.First().Value.ToString(), parameterType);
-                            // Assign the deserialized object to the args array
-                            args[i] = deserializedObject;
-                        }
+                        var json = JsonSerializer.Serialize(actionValue.FirstOrDefault().Value);
+                        args[i] = JsonSerializer.Deserialize(json, parameterType);
                     }
-                    catch (InvalidCastException ex)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to convert parameter '{parameter.Name}' to type '{parameter.ParameterType}'. {ex.Message}");
+                        _logger.LogError(ex, $"Failed to deserialize parameter '{parameter.Name}' to type '{parameterType}'. {ex.Message}");
+                        return;  
                     }
                 }
             }
-            method.Invoke(null, args);
+
+            try
+            {
+                method.Invoke(null, args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error invoking method '{actionKey}': {ex.Message}");
+            }
         }
     }
 
@@ -114,8 +99,8 @@ public class Repository : IRepository
         }
         catch (DirectoryServicesCOMException ex)
         {
-            Console.WriteLine($"Error renaming entry: {ex.Message}");
-            // Handle the exception as per your application's requirements
+           // Console.WriteLine($"Error renaming entry: {ex.Message}");
+           // _logger.LogError(ex, $"Error renaming entry: {ex.Message}");
         }
     }
 
@@ -130,7 +115,6 @@ public class Repository : IRepository
         {
             if (destinationOu is not null)
             {
-                //Identifier destOu = destinationOu["destinationOu"];
                 Identifier destOu = destinationOu;
                 searcherDestination.Filter = $"({destOu.Attribute}={destOu.Value})";
             }
@@ -172,7 +156,6 @@ public class Repository : IRepository
             {
                 if (action.Value is not null)
                 {
-                    //HandleMoveAction(action.Key, action.Value, objectEntry);
                     HandleAction(action.Key, action.Value, objectEntry);
                 }
             }
