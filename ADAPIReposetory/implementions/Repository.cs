@@ -69,7 +69,10 @@ public class Repository : IRepository
                     try
                     {
                         var json = JsonSerializer.Serialize(actionValue.FirstOrDefault().Value);
-                        args[i] = JsonSerializer.Deserialize(json, parameterType);
+
+                        MethodInfo methodInfo = typeof(JsonSerializer).GetMethod("Deserialize", new[] { typeof(JsonDocument), typeof(JsonSerializerOptions) });
+                        MethodInfo generic = methodInfo.MakeGenericMethod(parameterType);
+                        args[i] = generic.Invoke(null, new object[] { JsonDocument.Parse(json), new JsonSerializerOptions() });
                     }
                     catch (Exception ex)
                     {
