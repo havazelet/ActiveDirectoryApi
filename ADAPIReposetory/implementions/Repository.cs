@@ -95,16 +95,7 @@ public class Repository : IRepository
 
     public static void Rename(DirectoryEntry objectEntry, string newName)
     {
-        try
-        {
-            objectEntry.Rename("CN=" + newName);
-            Console.WriteLine("Entry renamed successfully.");
-        }
-        catch (DirectoryServicesCOMException ex)
-        {
-           // Console.WriteLine($"Error renaming entry: {ex.Message}");
-           // _logger.LogError(ex, $"Error renaming entry: {ex.Message}");
-        }
+        objectEntry.Rename("CN=" + newName);
     }
 
     public static void ResetPassword(DirectoryEntry objectEntry, string newName)
@@ -126,10 +117,6 @@ public class Repository : IRepository
             {
                 DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
                 objectEntry.MoveTo(objectEntryDestination);
-            }
-            else
-            {
-                Console.WriteLine("Destination OU not found.");
             }
         }
     }
