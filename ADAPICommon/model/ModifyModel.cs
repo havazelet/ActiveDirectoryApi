@@ -10,5 +10,5 @@ public class ModifyModel
 {
     public Identifier Identifier { get; set; }
     public Dictionary<string, string> WriteAttribute { get; set; }
-    public Identifier Actions { get; set; }
+    public Dictionary<string, Dictionary<string, object>> Actions { get; set; }
 }

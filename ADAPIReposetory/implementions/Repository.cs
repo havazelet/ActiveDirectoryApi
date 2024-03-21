@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.DirectoryServices;
+using System.Reflection;
+using System.Text.Json;
 
 namespace ADAPIReposetory.implementions;
 
@@ -45,32 +47,48 @@ public class Repository : IRepository
         }
     }
 
-    public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
+    public static void Rename(DirectoryEntry objectEntry, string newName)
     {
-        using (DirectorySearcher searcher = new DirectorySearcher())
+        objectEntry.Rename("CN=" + newName);
+    }
+
+    public static void ResetPassword(DirectoryEntry objectEntry, string newName)
+    {
+        objectEntry.Invoke("setPassword", new object[] { newName });
+    }
+
+    public static void MoveTo(DirectoryEntry objectEntry, Identifier destinationOu)
+    {
+        using (DirectorySearcher searcherDestination = new DirectorySearcher())
         {
-            searcher.Filter = $"({newAdObject.Identifier?.Attribute}={newAdObject.Identifier?.Value})";
-            SearchResult result = searcher.FindOne();
-
-            if (result is not null)
+            if (destinationOu is not null)
             {
-                DirectoryEntry objectEntry = result.GetDirectoryEntry();
-
-                foreach (var attribute in newAdObject.WriteAttribute)
-                {
-                    if (objectEntry.Properties.Contains(attribute.Key))
-                    {
-                        objectEntry.Properties[attribute.Key].Value = attribute.Value;
-                    }
-                    else
-                    {
-                        objectEntry.Properties[attribute.Key].Add(attribute.Value);
-                    }
-                }
-                objectEntry.CommitChanges();
+                Identifier destOu = destinationOu;
+                searcherDestination.Filter = $"({destOu.Attribute}={destOu.Value})";
+            }
+            SearchResult resultDestination = searcherDestination.FindOne();
+            if (resultDestination != null)
+            {
+                DirectoryEntry objectEntryDestination = resultDestination.GetDirectoryEntry();
+                objectEntry.MoveTo(objectEntryDestination);
             }
         }
     }
 
+    public void ModifyADObject(ModifyModel newAdObject, string adObjectType, DirectoryEntry objectEntry)
+    {
+        foreach (var attribute in newAdObject.WriteAttribute)
+        {
+            if (objectEntry.Properties.Contains(attribute.Key))
+            {
+                objectEntry.Properties[attribute.Key].Value = attribute.Value;
+            }
+            else
+            {
+                objectEntry.Properties[attribute.Key].Add(attribute.Value);
+            }
+        }
+        objectEntry.CommitChanges();
+    }
 }
 
