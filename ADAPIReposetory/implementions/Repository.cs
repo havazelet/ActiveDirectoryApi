@@ -6,7 +6,6 @@ using System;
 using System.DirectoryServices;
 using System.Reflection;
 using System.Text.Json;
-using static System.Collections.Specialized.BitVector32;
 
 namespace ADAPIReposetory.implementions;
 
@@ -48,51 +47,6 @@ public class Repository : IRepository
         }
     }
 
-    public void HandleAction(string actionKey, Dictionary<string, object> actionValue, DirectoryEntry objectEntry)
-    {
-        MethodInfo method = typeof(Repository).GetMethod(actionKey);
-        if (method != null)
-        {
-            ParameterInfo[] parameters = method.GetParameters();
-            object[] args = new object[parameters.Length];
-
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                ParameterInfo parameter = parameters[i];
-                Type parameterType = parameter.ParameterType;
-
-                if (parameterType == typeof(DirectoryEntry))
-                {
-                    args[i] = objectEntry;
-                }
-                else {
-                    try
-                    {
-                        var json = JsonSerializer.Serialize(actionValue.FirstOrDefault().Value);
-
-                        MethodInfo methodInfo = typeof(JsonSerializer).GetMethod("Deserialize", new[] { typeof(JsonDocument), typeof(JsonSerializerOptions) });
-                        MethodInfo generic = methodInfo.MakeGenericMethod(parameterType);
-                        args[i] = generic.Invoke(null, new object[] { JsonDocument.Parse(json), new JsonSerializerOptions() });
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Failed to deserialize parameter '{parameter.Name}' to type '{parameterType}'. {ex.Message}");
-                        return;  
-                    }
-                }
-            }
-
-            try
-            {
-                method.Invoke(null, args);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error invoking method '{actionKey}': {ex.Message}");
-            }
-        }
-    }
-
     public static void Rename(DirectoryEntry objectEntry, string newName)
     {
         objectEntry.Rename("CN=" + newName);
@@ -121,37 +75,20 @@ public class Repository : IRepository
         }
     }
 
-    public void ModifyADObject(ModifyModel newAdObject, string adObjectType)
+    public void ModifyADObject(ModifyModel newAdObject, string adObjectType, DirectoryEntry objectEntry)
     {
-        using DirectorySearcher searcher = new DirectorySearcher();
-        searcher.Filter = $"({newAdObject.Identifier?.Attribute}={newAdObject.Identifier?.Value})";
-        SearchResult result = searcher.FindOne();
-
-        if (result is not null)
+        foreach (var attribute in newAdObject.WriteAttribute)
         {
-            DirectoryEntry objectEntry = result.GetDirectoryEntry();
-
-            foreach (var attribute in newAdObject.WriteAttribute)
+            if (objectEntry.Properties.Contains(attribute.Key))
             {
-                if (objectEntry.Properties.Contains(attribute.Key))
-                {
-                    objectEntry.Properties[attribute.Key].Value = attribute.Value;
-                }
-                else
-                {
-                    objectEntry.Properties[attribute.Key].Add(attribute.Value);
-                }
+                objectEntry.Properties[attribute.Key].Value = attribute.Value;
             }
-            foreach (var action in newAdObject.Actions)
+            else
             {
-                if (action.Value is not null)
-                {
-                    HandleAction(action.Key, action.Value, objectEntry);
-                }
+                objectEntry.Properties[attribute.Key].Add(attribute.Value);
             }
-            objectEntry.CommitChanges();
         }
+        objectEntry.CommitChanges();
     }
-
 }
 
